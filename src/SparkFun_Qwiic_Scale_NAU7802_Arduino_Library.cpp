@@ -156,7 +156,7 @@ bool NAU7802::reset()
 }
 
 //Set the onboard Low-Drop-Out voltage regulator to a given value
-//2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.2, 4.5V are avaialable
+//2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.2, 4.5V are available
 bool NAU7802::setLDO(uint8_t ldoValue)
 {
   if (ldoValue > 0b111)

@@ -2,14 +2,12 @@
   Use the Qwiic Scale to read load cells and scales
   By: Nathan Seidle @ SparkFun Electronics
   Date: March 3rd, 2019
-  License: This code is public domain but you buy me a beer if you use this 
+  License: This code is public domain but you buy me a beer if you use this
   and we meet someday (Beerware license).
 
-  The Qwiic Scale is an I2C device that converts analog signals to a 24-bit
-  digital signal. This makes it possible to create your own digital scale
-  either by hacking an off-the-shelf bathroom scale or by creating your
-  own scale using a load cell.
-  
+  The NAU7802 supports up to 400kHz. You can also pass different wire ports
+  into the library.
+
   SparkFun labored with love to create this code. Feel like supporting open
   source? Buy a board from SparkFun!
   https://www.sparkfun.com/products/15242
@@ -31,9 +29,10 @@ void setup()
   Serial.begin(9600);
   Serial.println("Qwiic Scale Example");
 
-  Wire.begin();
+  Wire1.begin(); //Doesn't compile on an Uno. This example is for other platforms that have multiple I2C ports.
+  Wire1.setClock(400000); 
 
-  if (myScale.begin() == false)
+  if (myScale.begin(Wire1) == false) //Pass the Wire port to the library
   {
     Serial.println("Scale not detected. Please check wiring. Freezing...");
     while (1);
@@ -43,7 +42,7 @@ void setup()
 
 void loop()
 {
-  if(myScale.available() == true)
+  if (myScale.available())
   {
     long currentReading = myScale.getReading();
     Serial.print("Reading: ");

@@ -5,19 +5,12 @@
   License: This code is public domain but you buy me a beer if you use this 
   and we meet someday (Beerware license).
 
-  The Qwiic Scale is an I2C device that converts analog signals to a 24-bit
-  digital signal. This makes it possible to create your own digital scale
-  either by hacking an off-the-shelf bathroom scale or by creating your
-  own scale using a load cell.
+  The NAU7802 runs at ~2mA but can be powered down to 200nA if needed.
+  This example turns the scale on once per second.
   
   SparkFun labored with love to create this code. Feel like supporting open
   source? Buy a board from SparkFun!
   https://www.sparkfun.com/products/15242
-
-  Hardware Connections:
-  Plug a Qwiic cable into the Qwiic Scale and a RedBoard Qwiic
-  If you don't have a platform with a Qwiic connection use the SparkFun Qwiic Breadboard Jumper (https://www.sparkfun.com/products/14425)
-  Open the serial monitor at 9600 baud to see the output
 */
 
 #include <Wire.h>
@@ -43,10 +36,18 @@ void setup()
 
 void loop()
 {
-  if(myScale.available() == true)
-  {
-    long currentReading = myScale.getReading();
-    Serial.print("Reading: ");
-    Serial.println(currentReading);
-  }
+  myScale.powerDown(); //Power down to ~200nA
+  delay(1000);
+  myScale.powerUp(); //Power up scale. This scale takes ~600ms to boot and take reading.
+
+  //Time how long it takes for scale to take a reading
+  long startTime = millis();
+  while(myScale.available() == false)
+    delay(1);
+  
+  long currentReading = myScale.getReading();
+  Serial.print("Startup time: ");
+  Serial.print(millis() - startTime);
+  Serial.print(", ");
+  Serial.println(currentReading);
 }

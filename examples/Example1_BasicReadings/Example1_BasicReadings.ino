@@ -9,6 +9,16 @@
   digital signal. This makes it possible to create your own digital scale
   either by hacking an off-the-shelf bathroom scale or by creating your
   own scale using a load cell.
+
+  This example merely outputs the raw data from a load cell. For example, the
+  output may be 25776 and change to 43122 when a cup of tea is set on the scale.
+  These values are unitless - they are not grams or ounces. Instead, it is a
+  linear relationship that must be calculated. Remeber y = mx + b?
+  If 25776 is the 'zero' or tare state, and 43122 when I put 15.2oz of tea on the
+  scale, then what is a reading of 57683 in oz?
+
+  (43122 - 25776) = 17346/15.2 = 1141.2 per oz
+  (57683 - 25776) = 31907/1141.2 = 27.96oz is on the scale
   
   SparkFun labored with love to create this code. Feel like supporting open
   source? Buy a board from SparkFun!

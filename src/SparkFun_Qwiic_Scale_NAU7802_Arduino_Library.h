@@ -53,6 +53,8 @@ typedef enum
   NAU7802_ADC = 0x15, //Shared ADC and OTP 32:24
   NAU7802_OTP_B1,     //OTP 23:16 or 7:0?
   NAU7802_OTP_B0,     //OTP 15:8
+  NAU7802_PGA = 0x1B,
+  NAU7802_PGA_PWR = 0x1C,
   NAU7802_DEVICE_REV = 0x1F,
 } Scale_Registers;
 
@@ -87,6 +89,26 @@ typedef enum
   NAU7802_CTRL2_CRS = 4,
   NAU7802_CTRL2_CHS = 7,
 } CTRL2_Bits;
+
+//Bits within the PGA register
+typedef enum
+{
+  NAU7802_PGA_CHP_DIS = 0,
+  NAU7802_PGA_INV = 3,
+  NAU7802_PGA_BYPASS_EN,
+  NAU7802_PGA_OUT_EN,
+  NAU7802_PGA_LDOMODE,
+  NAU7802_PGA_RD_OTP_SEL,
+} PGA_Bits;
+
+//Bits within the PGA PWR register
+typedef enum
+{
+  NAU7802_PGA_PWR_PGA_CURR = 0,
+  NAU7802_PGA_PWR_ADC_CURR = 2,
+  NAU7802_PGA_PWR_MSTR_BIAS_CURR = 4,
+  NAU7802_PGA_PWR_PGA_CAP_EN = 7,
+} PGA_Bits;
 
 //Allowed Low drop out regulator voltages
 typedef enum

@@ -61,7 +61,7 @@ void setup()
 
   readSystemSettings(); //Load zeroOffset and calibrationFactor from EEPROM
 
-  myScale.setSampleRate(NAU7802_SPS_320); //Increase sample rate
+  myScale.setSampleRate(NAU7802_SPS_320); //Increase to max sample rate
   myScale.calibrate();
 }
 

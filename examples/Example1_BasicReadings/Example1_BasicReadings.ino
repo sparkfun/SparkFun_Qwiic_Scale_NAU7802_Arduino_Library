@@ -32,7 +32,7 @@
 
 #include <Wire.h>
 
-#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_NAU8702
+#include "SparkFun_Qwiic_Scale_NAU7802_Arduino_Library.h" // Click here to get the library: http://librarymanager/All#SparkFun_NAU7802
 
 NAU7802 myScale; //Create instance of the NAU7802 class
 

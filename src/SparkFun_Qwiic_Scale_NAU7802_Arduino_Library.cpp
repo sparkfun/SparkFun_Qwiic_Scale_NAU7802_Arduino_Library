@@ -50,9 +50,9 @@ bool NAU7802::begin(TwoWire &wirePort)
 
   result &= setLDO(NAU7802_LDO_3V3); //Set LDO to 3.3V
 
-  result &= setGain(NAU7802_GAIN_16); //Set gain to 16
+  result &= setGain(NAU7802_GAIN_128); //Set gain to 128
 
-  result &= setSampleRate(NAU7802_SPS_10); //Set samples per second to 10
+  result &= setSampleRate(NAU7802_SPS_80); //Set samples per second to 10
 
   result &= setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
 
@@ -79,9 +79,10 @@ bool NAU7802::available()
   return (getBit(NAU7802_PU_CTRL_CR, NAU7802_PU_CTRL));
 }
 
-//Calibrate system. Returns true if CAL_ERR bit is 0 (no error)
+//Calibrate analog front end of system. Returns true if CAL_ERR bit is 0 (no error)
 //Takes approximately 344ms to calibrate
-bool NAU7802::calibrate()
+//It is recommended that the AFE be re-calibrated any time the gain, SPS, or channel number is changed.
+bool NAU7802::calibrateAFE()
 {
   setBit(NAU7802_CTRL2_CALS, NAU7802_CTRL2); //Begin calibration
 
@@ -229,7 +230,7 @@ uint32_t NAU7802::getAverage(uint8_t averageAmount)
     if (available() == true)
     {
       total += getReading();
-      if (samplesAquired++ == averageAmount)
+      if (++samplesAquired == averageAmount)
         break; //All done
     }
     if (millis() - startTime > 1000)
@@ -247,12 +248,12 @@ void NAU7802::calculateZeroOffset(uint8_t averageAmount)
 }
 
 //Sets the internal variable. Useful for users who are loading values from NVM.
-void NAU7802::setZeroOffset(uint32_t newZeroOffset)
+void NAU7802::setZeroOffset(int32_t newZeroOffset)
 {
   _zeroOffset = newZeroOffset;
 }
 
-uint32_t NAU7802::getZeroOffset()
+int32_t NAU7802::getZeroOffset()
 {
   return (_zeroOffset);
 }

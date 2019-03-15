@@ -108,7 +108,7 @@ typedef enum
   NAU7802_PGA_PWR_ADC_CURR = 2,
   NAU7802_PGA_PWR_MSTR_BIAS_CURR = 4,
   NAU7802_PGA_PWR_PGA_CAP_EN = 7,
-} PGA_Bits;
+} PGA_PWR_Bits;
 
 //Allowed Low drop out regulator voltages
 typedef enum
@@ -165,8 +165,8 @@ public:
   uint32_t getAverage(uint8_t samplesToTake); //Return the average of a given number of readings
 
   void calculateZeroOffset(uint8_t averageAmount = 8); //Also called taring. Call this with nothing on the scale
-  void setZeroOffset(uint32_t newZeroOffset);          //Sets the internal variable. Useful for users who are loading values from NVM.
-  uint32_t getZeroOffset();                            //Ask library for this value. Useful for storing value into NVM.
+  void setZeroOffset(int32_t newZeroOffset);          //Sets the internal variable. Useful for users who are loading values from NVM.
+  int32_t getZeroOffset();                            //Ask library for this value. Useful for storing value into NVM.
 
   void calculateCalibrationFactor(float weightOnScale, uint8_t averageAmount = 8); //Call this with the value of the thing on the scale. Sets the calibration factor based on the weight on scale and zero offset.
   void setCalibrationFactor(float calFactor);                                      //Pass a known calibration factor into library. Helpful if users is loading settings from NVM.
@@ -174,12 +174,12 @@ public:
 
   float getWeight(bool allowNegativeWeights = false); //Once you've set zero offset and cal factor, you can ask the library to do the calculations for you.
 
-  bool setGain(uint8_t gainValue);        //Set the gain. x1, 2, 4, 8, 16, 32, 64, 128 are avaialable
+  bool setGain(uint8_t gainValue);        //Set the gain. x1, 2, 4, 8, 16, 32, 64, 128 are available
   bool setLDO(uint8_t ldoValue);          //Set the onboard Low-Drop-Out voltage regulator to a given value. 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.2, 4.5V are avaialable
   bool setSampleRate(uint8_t rate);       //Set the readings per second. 10, 20, 40, 80, and 320 samples per second is available
   bool setChannel(uint8_t channelNumber); //Select between 1 and 2
 
-  bool calibrate(); //Calibrate system. Returns true if CAL_ERR bit is 0 (no error)
+  bool calibrateAFE(); //Calibrate the analog from end of the NAU7802. Returns true if CAL_ERR bit is 0 (no error)
   bool reset();     //Resets all registers to Power Of Defaults
 
   bool powerUp();   //Power up digital and analog sections of scale, ~2mA

@@ -6,13 +6,13 @@
   and we meet someday (Beerware license).
 
   This example shows how to setup a scale complete with zero offset (tare),
-  and linear calibration. 
+  and linear calibration.
 
   If you know the calibration and offset values you can send them directly to
   the library. This is useful if you want to maintain values between power cycles
-  in EEPROM or Non-volatile memory (NVM). If you don't know these values then 
+  in EEPROM or Non-volatile memory (NVM). If you don't know these values then
   you can go through a series of steps to calculate the offset and calibration value.
-  
+
   Background: The IC merely outputs the raw data from a load cell. For example, the
   output may be 25776 and change to 43122 when a cup of tea is set on the scale.
   These values are unitless - they are not grams or ounces. Instead, it is a
@@ -40,9 +40,16 @@
 
 NAU7802 myScale; //Create instance of the NAU7802 class
 
-//EEPROM locations to store 4-byte variables 
+//EEPROM locations to store 4-byte variables
 #define LOCATION_CALIBRATION_FACTOR 0 //Float, requires 4 bytes of EEPROM
 #define LOCATION_ZERO_OFFSET 10 //Must be more than 4 away from previous spot. Long, requires 4 bytes of EEPROM
+
+bool settingsDetected = false; //Used to prompt user to calibrate their scale
+
+//Create an array to take average of weights. This helps smooth out jitter.
+#define AVG_SIZE 4
+float avgWeights[AVG_SIZE];
+byte avgWeightSpot = 0;
 
 void setup()
 {
@@ -50,7 +57,7 @@ void setup()
   Serial.println("Qwiic Scale Example");
 
   Wire.begin();
-  Wire.setClock(400000);
+  Wire.setClock(400000); //Qwiic Scale is capable of running at 400kHz if desired
 
   if (myScale.begin() == false)
   {
@@ -63,6 +70,11 @@ void setup()
 
   myScale.setSampleRate(NAU7802_SPS_320); //Increase to max sample rate
   myScale.calibrate();
+
+  Serial.print("Zero offset: ");
+  Serial.println(myScale.getZeroOffset());
+  Serial.print("Calibration factor: ");
+  Serial.println(myScale.getCalibrationFactor());
 }
 
 void loop()
@@ -71,11 +83,27 @@ void loop()
   {
     long currentReading = myScale.getReading();
     float currentWeight = myScale.getWeight();
-    
+
     Serial.print("Reading: ");
     Serial.print(currentReading);
     Serial.print("\tWeight: ");
     Serial.print(currentWeight, 2); //Print 2 decimal places
+
+    avgWeights[avgWeightSpot++] = currentWeight;
+    if(avgWeightSpot == AVG_SIZE) avgWeightSpot = 0;
+
+    float avgWeight = 0;
+    for (int x = 0 ; x < AVG_SIZE ; x++)
+      avgWeight += avgWeights[x];
+    avgWeight /= AVG_SIZE;
+
+    Serial.print("\tAvgWeight: ");
+    Serial.print(avgWeight, 2); //Print 2 decimal places
+
+    if(settingsDetected == false)
+    {
+      Serial.print("\tScale not calibrated. Press 'c'.");
+    }
 
     Serial.println();
   }
@@ -104,7 +132,7 @@ void calibrateScale(void)
   while (Serial.available()) Serial.read(); //Clear anything in RX buffer
   while (Serial.available() == 0) delay(10); //Wait for user to press key
 
-  myScale.calculateZeroOffset(); //Zero or Tare the scale.
+  myScale.calculateZeroOffset(64); //Zero or Tare the scale. Average over 64 readings.
   Serial.print(F("New zero offset: "));
   Serial.println(myScale.getZeroOffset());
 
@@ -120,7 +148,7 @@ void calibrateScale(void)
   float weightOnScale = Serial.parseFloat();
   Serial.println();
 
-  myScale.calculateCalibrationFactor(weightOnScale); //Tell the library how much weight is currently on it
+  myScale.calculateCalibrationFactor(weightOnScale, 64); //Tell the library how much weight is currently on it
   Serial.print(F("New cal factor: "));
   Serial.println(myScale.getCalibrationFactor(), 2);
 
@@ -157,11 +185,15 @@ void readSystemSettings(void)
   EEPROM.get(LOCATION_ZERO_OFFSET, settingZeroOffset);
   if (settingZeroOffset == 0xFFFFFFFF)
   {
-    settingZeroOffset = 1000; //Default to 1000 so we don't get inf
+    settingZeroOffset = 1000L; //Default to 1000 so we don't get inf
     EEPROM.put(LOCATION_ZERO_OFFSET, settingZeroOffset);
   }
 
   //Pass these values to the library
   myScale.setCalibrationFactor(settingCalibrationFactor);
   myScale.setZeroOffset(settingZeroOffset);
+
+  settingsDetected = true; //Assume for the moment that there are good cal values
+  if (settingCalibrationFactor < 0.1 || settingZeroOffset == 1000)
+    settingsDetected = false; //Defaults detected. Prompt user to cal scale.
 }

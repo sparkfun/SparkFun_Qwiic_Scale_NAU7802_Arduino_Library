@@ -32,7 +32,7 @@ setGain	KEYWORD2
 setLDO	KEYWORD2
 setSampleRate	KEYWORD2
 setChannel	KEYWORD2
-calibrate	KEYWORD2
+calibrateAFE	KEYWORD2
 reset	KEYWORD2
 powerUp	KEYWORD2
 powerDown	KEYWORD2

@@ -69,7 +69,7 @@ void setup()
   readSystemSettings(); //Load zeroOffset and calibrationFactor from EEPROM
 
   myScale.setSampleRate(NAU7802_SPS_320); //Increase to max sample rate
-  myScale.calibrate();
+  myScale.calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel 
 
   Serial.print("Zero offset: ");
   Serial.println(myScale.getZeroOffset());

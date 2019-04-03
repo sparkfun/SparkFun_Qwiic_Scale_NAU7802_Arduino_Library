@@ -58,7 +58,7 @@ bool NAU7802::begin(TwoWire &wirePort)
 
   result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
 
-  result &= calibrate();
+  result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
 
   return (result);
 }

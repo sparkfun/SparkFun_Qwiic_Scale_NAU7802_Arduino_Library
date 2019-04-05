@@ -5,8 +5,8 @@
   License: This code is public domain but you buy me a beer if you use this
   and we meet someday (Beerware license).
 
-  The interrupt pin indicates when a sample has been taken. The pin can be
-  configured active high or active low.
+  The interrupt pin indicates when a sample has been taken. This example shows 
+  how the INT pin can be configured active high or active low.
 
   SparkFun labored with love to create this code. Feel like supporting open
   source? Buy a board from SparkFun!

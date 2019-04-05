@@ -11,6 +11,11 @@
   SparkFun labored with love to create this code. Feel like supporting open
   source? Buy a board from SparkFun!
   https://www.sparkfun.com/products/15242
+
+  Hardware Connections:
+  Plug a Qwiic cable into the Qwiic Scale and a RedBoard Qwiic
+  If you don't have a platform with a Qwiic connection use the SparkFun Qwiic Breadboard Jumper (https://www.sparkfun.com/products/14425)
+  Open the serial monitor at 9600 baud to see the output
 */
 
 #include <Wire.h>

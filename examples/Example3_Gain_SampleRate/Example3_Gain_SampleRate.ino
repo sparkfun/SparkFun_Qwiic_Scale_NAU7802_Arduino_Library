@@ -19,6 +19,11 @@
   SparkFun labored with love to create this code. Feel like supporting open
   source? Buy a board from SparkFun!
   https://www.sparkfun.com/products/15242
+
+  Hardware Connections:
+  Plug a Qwiic cable into the Qwiic Scale and a RedBoard Qwiic
+  If you don't have a platform with a Qwiic connection use the SparkFun Qwiic Breadboard Jumper (https://www.sparkfun.com/products/14425)
+  Open the serial monitor at 9600 baud to see the output
 */
 
 #include <Wire.h>
@@ -45,7 +50,7 @@ void setup()
 
   myScale.setSampleRate(NAU7802_SPS_40); //Sample rate can be set to 10, 20, 40, 80, or 320Hz
 
-  myScale.calibrate(); //Does an internal calibration. Recommended after power up, gain changes, sample rate changes, or channel changes.
+  myScale.calibrateAFE(); //Does an internal calibration. Recommended after power up, gain changes, sample rate changes, or channel changes.
 }
 
 void loop()

@@ -29,8 +29,8 @@ void setup()
   Serial.begin(9600);
   Serial.println("Qwiic Scale Example");
 
-  Wire1.begin(); //Doesn't compile on an Uno. This example is for other platforms that have multiple I2C ports.
-  Wire1.setClock(400000); 
+  Wire1.begin(); //This line won't compile on an Uno. This example is for other platforms that have multiple I2C ports.
+  Wire1.setClock(400000); //We can increase I2C clock speed to 400kHz, the NAU7802 supports it
 
   if (myScale.begin(Wire1) == false) //Pass the Wire port to the library
   {

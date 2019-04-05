@@ -1,11 +1,15 @@
 SparkFun Qwiic Scale NAU7802 Library
 ===========================================================
 
- [![SparkFun Qwiic Scale - NAU7802 (SEN-15242)](https://cdn.sparkfun.com/assets/parts/1/3/0/8/1/14813-SGP30_Breakout__Qwiic_-01.jpg)](https://www.sparkfun.com/products/15242) 
+ [![SparkFun Qwiic Scale - NAU7802 (SEN-15242)](https://cdn.sparkfun.com/assets/parts/1/3/7/0/0/Scale_Converted_to_Digital_-_SparkFun_Qwiic_Scale.jpg)](https://www.sparkfun.com/products/15242) 
 
 [*SparkFun Qwiic Scale - NAU7802 (SEN-15242)*](https://www.sparkfun.com/products/15242)
 
-The SGP30 is an indoor air quality sensor equipped with an I<sup>2</sup>C interface. It outputs equivalent CO<sub>2</sub> in ppm and Total Volatile Organic Compounds (TVOC) in ppb. The sensor also gives access to its raw measurement values of Ethanol and H<sub>2</sub>. 
+The SparkFun Qwiic Scale - NAU7802 is a small breakout board for the NAU7802 that allows you to easily read load cells to measure weight. By connecting the amplifier to your microcontroller you will be able to read the changes in the resistance of the load cell, and with some calibration you'll be able to get very accurate weight measurements. This can be handy for creating your own industrial scale, process control or simple presence detection.
+
+Connect a load cell and the Qwiic Scale translates the data into something your microcontroller can read. The NAU7802 is an ADC with built in gain and I<sup>2</sup>C output to amplify and convert the readings from a standard load cell. A load cell is basically a device that translates pressure or force into electrical signals. In most cases this signal is very small and needs to be amplified. There are many popular chips that read the change and amplify it, but the NAU7802 goes one step further and converts everything to a true I<sup>2</sup>C output.  
+
+The board provides 4 spring terminals to connect your load cell with no soldering required. Additionally, the Qwiic connectors provide an easy interface to connect this board to your microcontroller again with no soldering required. In addition to the I<sup>2</sup>C pins, the board also breaks out an interrupt pin, AVDD to the edge of the board. The differential input signals (plus a second set of input signals) are broken out to the middle of the board as well.
 
 SparkFun labored with love to create this code. Feel like supporting open source hardware? 
 Buy a [board](https://www.sparkfun.com/products/15242) from SparkFun!

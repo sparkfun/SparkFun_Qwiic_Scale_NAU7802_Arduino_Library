@@ -161,8 +161,8 @@ public:
   bool isConnected();                   //Returns true if device acks at the I2C address
 
   bool available();                           //Returns true if Cycle Ready bit is set (conversion is complete)
-  uint32_t getReading();                      //Returns 24-bit reading. Assumes CR Cycle Ready bit (ADC conversion complete) has been checked by .available()
-  uint32_t getAverage(uint8_t samplesToTake); //Return the average of a given number of readings
+  int32_t getReading();                      //Returns 24-bit reading. Assumes CR Cycle Ready bit (ADC conversion complete) has been checked by .available()
+  int32_t getAverage(uint8_t samplesToTake); //Return the average of a given number of readings
 
   void calculateZeroOffset(uint8_t averageAmount = 8); //Also called taring. Call this with nothing on the scale
   void setZeroOffset(int32_t newZeroOffset);          //Sets the internal variable. Useful for users who are loading values from NVM.
@@ -202,7 +202,7 @@ private:
   const uint8_t _deviceAddress = 0x2A; //Default unshifted 7-bit address of the NAU7802
 
   //y = mx+b
-  uint32_t _zeroOffset;     //This is b
+  int32_t _zeroOffset;     //This is b
   float _calibrationFactor; //This is m. User provides this number so that we can output y when requested
 };
 #endif

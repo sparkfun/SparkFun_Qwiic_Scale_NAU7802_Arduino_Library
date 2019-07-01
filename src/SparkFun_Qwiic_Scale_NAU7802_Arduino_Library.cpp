@@ -197,7 +197,7 @@ uint8_t NAU7802::getRevisionCode()
 
 //Returns 24-bit reading
 //Assumes CR Cycle Ready bit (ADC conversion complete) has been checked to be 1
-uint32_t NAU7802::getReading()
+int32_t NAU7802::getReading()
 {
   _i2cPort->beginTransmission(_deviceAddress);
   _i2cPort->write(NAU7802_ADCO_B2);
@@ -208,9 +208,20 @@ uint32_t NAU7802::getReading()
 
   if (_i2cPort->available())
   {
-    uint32_t value = (uint32_t)_i2cPort->read() << 16; //MSB
-    value |= (uint32_t)_i2cPort->read() << 8;          //MidSB
-    value |= (uint32_t)_i2cPort->read();               //LSB
+    uint32_t valueRaw = (uint32_t)_i2cPort->read() << 16; //MSB
+    valueRaw |= (uint32_t)_i2cPort->read() << 8;          //MidSB
+    valueRaw |= (uint32_t)_i2cPort->read();               //LSB
+
+	// the raw value coming from the ADC is a 24-bit number, so the sign bit now
+	// resides on bit 23 (0 is LSB) of the uint32_t container. By shifting the
+	// value to the left, I move the sign bit to the MSB of the uint32_t container.
+	// By casting to a signed int32_t container I now have properly recovered
+	// the sign of the original value
+	int32_t valueShifted = (int32_t)(valueRaw << 8);
+
+	// shift the number back right to recover its intended magnitude
+	int32_t value = ( valueShifted >> 8 );
+
     return (value);
   }
 
@@ -219,9 +230,9 @@ uint32_t NAU7802::getReading()
 
 //Return the average of a given number of readings
 //Gives up after 1000ms so don't call this function to average 8 samples setup at 1Hz output (requires 8s)
-uint32_t NAU7802::getAverage(uint8_t averageAmount)
+int32_t NAU7802::getAverage(uint8_t averageAmount)
 {
-  unsigned long total = 0;
+  long total = 0;
   uint8_t samplesAquired = 0;
 
   unsigned long startTime = millis();
@@ -261,7 +272,7 @@ int32_t NAU7802::getZeroOffset()
 //Call after zeroing. Provide the float weight sitting on scale. Units do not matter.
 void NAU7802::calculateCalibrationFactor(float weightOnScale, uint8_t averageAmount)
 {
-  uint32_t onScale = getAverage(8);
+  int32_t onScale = getAverage(averageAmount);
   float newCalFactor = (onScale - _zeroOffset) / (float)weightOnScale;
   setCalibrationFactor(newCalFactor);
 }
@@ -281,7 +292,7 @@ float NAU7802::getCalibrationFactor()
 //Returns the y of y = mx + b using the current weight on scale, the cal factor, and the offset.
 float NAU7802::getWeight(bool allowNegativeWeights)
 {
-  uint32_t onScale = getAverage(8);
+  int32_t onScale = getAverage(8);
 
   //Prevent the current reading from being less than zero offset
   //This happens when the scale is zero'd, unloaded, and the load cell reports a value slightly less than zero value

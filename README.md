@@ -14,6 +14,10 @@ The board provides 4 spring terminals to connect your load cell with no solderin
 SparkFun labored with love to create this code. Feel like supporting open source hardware? 
 Buy a [board](https://www.sparkfun.com/products/15242) from SparkFun!
 
+Thanks to:
+
+* gamix25 for fixing [signed bit error](https://github.com/sparkfun/SparkFun_Qwiic_Scale_NAU7802_Arduino_Library/pull/1)
+
 Repository Contents
 -------------------
 

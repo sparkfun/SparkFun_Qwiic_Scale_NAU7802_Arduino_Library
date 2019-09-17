@@ -28,8 +28,10 @@ NAU7802::NAU7802()
 }
 
 //Sets up the NAU7802 for basic function
+//If initialize is true (or not specified), default init and calibration is performed
+//If initialize is false, then it's up to the caller to initalize and calibrate
 //Returns true upon completion
-bool NAU7802::begin(TwoWire &wirePort)
+bool NAU7802::begin(TwoWire &wirePort, bool initialize)
 {
   //Get user's options
   _i2cPort = &wirePort;
@@ -44,21 +46,24 @@ bool NAU7802::begin(TwoWire &wirePort)
 
   bool result = true; //Accumulate a result as we do the setup
 
-  result &= reset(); //Reset all registers
+  if (initialize)
+  {
+    result &= reset(); //Reset all registers
 
-  result &= powerUp(); //Power on analog and digital sections of the scale
+    result &= powerUp(); //Power on analog and digital sections of the scale
 
-  result &= setLDO(NAU7802_LDO_3V3); //Set LDO to 3.3V
+    result &= setLDO(NAU7802_LDO_3V3); //Set LDO to 3.3V
 
-  result &= setGain(NAU7802_GAIN_128); //Set gain to 128
+    result &= setGain(NAU7802_GAIN_128); //Set gain to 128
 
-  result &= setSampleRate(NAU7802_SPS_80); //Set samples per second to 10
+    result &= setSampleRate(NAU7802_SPS_80); //Set samples per second to 10
 
-  result &= setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
+    result &= setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
 
-  result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
+    result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
 
-  result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
+    result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
+  }
 
   return (result);
 }
@@ -80,25 +85,60 @@ bool NAU7802::available()
 }
 
 //Calibrate analog front end of system. Returns true if CAL_ERR bit is 0 (no error)
-//Takes approximately 344ms to calibrate
+//Takes approximately 344ms to calibrate; wait up to 1000ms.
 //It is recommended that the AFE be re-calibrated any time the gain, SPS, or channel number is changed.
 bool NAU7802::calibrateAFE()
 {
-  setBit(NAU7802_CTRL2_CALS, NAU7802_CTRL2); //Begin calibration
+  beginCalibrateAFE();
+  return waitForCalibrateAFE(1000);
+}
 
-  uint16_t counter = 0;
-  while (1)
+//Begin asynchronous calibration of the analog front end.
+// Poll for completion with calAFEStatus() or wait with waitForCalibrateAFE()
+void NAU7802::beginCalibrateAFE()
+{
+  setBit(NAU7802_CTRL2_CALS, NAU7802_CTRL2);
+}
+
+//Check calibration status.
+NAU7802_Cal_Status NAU7802::calAFEStatus()
+{
+  if (getBit(NAU7802_CTRL2_CALS, NAU7802_CTRL2))
   {
-    if (getBit(NAU7802_CTRL2_CALS, NAU7802_CTRL2) == false)
-      break; //Goes to 0 once cal is complete
-    delay(1);
-    if (counter++ > 1000)
-      return (false);
+    return NAU7802_CAL_IN_PROGRESS;
   }
 
-  if (getBit(NAU7802_CTRL2_CAL_ERROR, NAU7802_CTRL2) == false)
-    return (true); //No error! Cal is good.
-  return (false);  //Cal error
+  if (getBit(NAU7802_CTRL2_CAL_ERROR, NAU7802_CTRL2))
+  {
+    return NAU7802_CAL_FAILURE;
+  }
+
+  // Calibration passed
+  return NAU7802_CAL_SUCCESS;
+}
+
+//Wait for asynchronous AFE calibration to complete with optional timeout.
+//If timeout is not specified (or set to 0), then wait indefinitely.
+//Returns true if calibration completes succsfully, otherwise returns false.
+bool NAU7802::waitForCalibrateAFE(uint32_t timeout_ms)
+{
+  uint32_t begin = millis();
+  NAU7802_Cal_Status cal_ready;
+
+  while ((cal_ready = calAFEStatus()) == NAU7802_CAL_IN_PROGRESS)
+  {
+    if ((timeout_ms > 0) && ((millis() - begin) > timeout_ms)) 
+    {
+      break;
+    }
+    delay(1);
+  }
+
+  if (cal_ready == NAU7802_CAL_SUCCESS)
+  {
+    return (true);
+  }
+  return (false);
 }
 
 //Set the readings per second

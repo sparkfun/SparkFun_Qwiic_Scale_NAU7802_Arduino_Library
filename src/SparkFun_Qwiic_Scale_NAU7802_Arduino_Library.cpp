@@ -127,7 +127,7 @@ bool NAU7802::waitForCalibrateAFE(uint32_t timeout_ms)
 
   while ((cal_ready = calAFEStatus()) == NAU7802_CAL_IN_PROGRESS)
   {
-    if ((timeout_ms > 0) && ((millis() - begin) > timeout_ms)) 
+    if ((timeout_ms > 0) && ((millis() - begin) > timeout_ms))
     {
       break;
     }
@@ -252,15 +252,15 @@ int32_t NAU7802::getReading()
     valueRaw |= (uint32_t)_i2cPort->read() << 8;          //MidSB
     valueRaw |= (uint32_t)_i2cPort->read();               //LSB
 
-	// the raw value coming from the ADC is a 24-bit number, so the sign bit now
-	// resides on bit 23 (0 is LSB) of the uint32_t container. By shifting the
-	// value to the left, I move the sign bit to the MSB of the uint32_t container.
-	// By casting to a signed int32_t container I now have properly recovered
-	// the sign of the original value
-	int32_t valueShifted = (int32_t)(valueRaw << 8);
+    // the raw value coming from the ADC is a 24-bit number, so the sign bit now
+    // resides on bit 23 (0 is LSB) of the uint32_t container. By shifting the
+    // value to the left, I move the sign bit to the MSB of the uint32_t container.
+    // By casting to a signed int32_t container I now have properly recovered
+    // the sign of the original value
+    int32_t valueShifted = (int32_t)(valueRaw << 8);
 
-	// shift the number back right to recover its intended magnitude
-	int32_t value = ( valueShifted >> 8 );
+    // shift the number back right to recover its intended magnitude
+    int32_t value = (valueShifted >> 8);
 
     return (value);
   }
@@ -286,6 +286,7 @@ int32_t NAU7802::getAverage(uint8_t averageAmount)
     }
     if (millis() - startTime > 1000)
       return (0); //Timeout - Bail with error
+    delay(1);
   }
   total /= averageAmount;
 
@@ -330,9 +331,9 @@ float NAU7802::getCalibrationFactor()
 }
 
 //Returns the y of y = mx + b using the current weight on scale, the cal factor, and the offset.
-float NAU7802::getWeight(bool allowNegativeWeights)
+float NAU7802::getWeight(bool allowNegativeWeights, uint8_t samplesToTake)
 {
-  int32_t onScale = getAverage(8);
+  int32_t onScale = getAverage(samplesToTake);
 
   //Prevent the current reading from being less than zero offset
   //This happens when the scale is zero'd, unloaded, and the load cell reports a value slightly less than zero value

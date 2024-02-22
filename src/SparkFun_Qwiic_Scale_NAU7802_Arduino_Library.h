@@ -161,6 +161,14 @@ typedef enum
   NAU7802_CAL_FAILURE = 2,
 } NAU7802_Cal_Status;
 
+//Calibration mode
+typedef enum
+{
+  NAU7802_CALMOD_INTERNAL = 0,
+  NAU7802_CALMOD_OFFSET = 2,
+  NAU7802_CALMOD_GAIN,
+} NAU7802_Cal_Mode;
+
 class NAU7802
 {
 public:
@@ -187,8 +195,8 @@ public:
   bool setSampleRate(uint8_t rate);       //Set the readings per second. 10, 20, 40, 80, and 320 samples per second is available
   bool setChannel(uint8_t channelNumber); //Select between 1 and 2
 
-  bool calibrateAFE();                               //Synchronous calibration of the analog front end of the NAU7802. Returns true if CAL_ERR bit is 0 (no error)
-  void beginCalibrateAFE();                          //Begin asynchronous calibration of the analog front end of the NAU7802. Poll for completion with calAFEStatus() or wait with waitForCalibrateAFE().
+  bool calibrateAFE(NAU7802_Cal_Mode mode = NAU7802_CALMOD_INTERNAL);      //Synchronous calibration of the analog front end of the NAU7802. Returns true if CAL_ERR bit is 0 (no error)
+  void beginCalibrateAFE(NAU7802_Cal_Mode mode = NAU7802_CALMOD_INTERNAL); //Begin asynchronous calibration of the analog front end of the NAU7802. Poll for completion with calAFEStatus() or wait with waitForCalibrateAFE().
   bool waitForCalibrateAFE(uint32_t timeout_ms = 0); //Wait for asynchronous AFE calibration to complete with optional timeout.
   NAU7802_Cal_Status calAFEStatus();                 //Check calibration status.
 

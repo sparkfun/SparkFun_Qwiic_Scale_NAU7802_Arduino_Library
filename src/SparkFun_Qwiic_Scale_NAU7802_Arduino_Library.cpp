@@ -62,6 +62,9 @@ bool NAU7802::begin(TwoWire &wirePort, bool initialize)
 
     result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
 
+    for (int i = 0; i < 10; i++)
+      getWeight(); //Flush
+
     result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
   }
 
@@ -87,16 +90,23 @@ bool NAU7802::available()
 //Calibrate analog front end of system. Returns true if CAL_ERR bit is 0 (no error)
 //Takes approximately 344ms to calibrate; wait up to 1000ms.
 //It is recommended that the AFE be re-calibrated any time the gain, SPS, or channel number is changed.
-bool NAU7802::calibrateAFE()
+bool NAU7802::calibrateAFE(NAU7802_Cal_Mode mode)
 {
-  beginCalibrateAFE();
+  beginCalibrateAFE(mode);
   return waitForCalibrateAFE(1000);
 }
 
 //Begin asynchronous calibration of the analog front end.
 // Poll for completion with calAFEStatus() or wait with waitForCalibrateAFE()
-void NAU7802::beginCalibrateAFE()
+void NAU7802::beginCalibrateAFE(NAU7802_Cal_Mode mode)
 {
+  uint8_t value = getRegister(NAU7802_CTRL2);
+  value &= 0xFC; // Clear CALMOD bits
+  uint8_t calMode = (uint8_t)mode;
+  calMode &= 0x03; // Limit mode to 2 bits
+  value |= calMode; // Set the mode
+  setRegister(NAU7802_CTRL2, value);
+
   setBit(NAU7802_CTRL2_CALS, NAU7802_CTRL2);
 }
 
@@ -180,7 +190,7 @@ bool NAU7802::powerUp()
     if (counter++ > 100)
       return (false); //Error
   }
-  return (setBit(NAU7802_PU_CTRL_CS, NAU7802_PU_CTRL)); // See 9.1 point 5
+  return (setBit(NAU7802_PU_CTRL_CS, NAU7802_PU_CTRL)); // Set Cycle Start bit. See 9.1 point 5
 }
 
 //Puts scale into low-power mode

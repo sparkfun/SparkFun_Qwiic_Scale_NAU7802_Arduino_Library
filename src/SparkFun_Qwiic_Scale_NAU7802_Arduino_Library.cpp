@@ -180,7 +180,7 @@ bool NAU7802::powerUp()
     if (counter++ > 100)
       return (false); //Error
   }
-  return (true);
+  return (setBit(NAU7802_PU_CTRL_CS, NAU7802_PU_CTRL)); // See 9.1 point 5
 }
 
 //Puts scale into low-power mode

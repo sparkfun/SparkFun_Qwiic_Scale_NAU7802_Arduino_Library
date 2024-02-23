@@ -132,12 +132,12 @@ NAU7802_Cal_Status NAU7802::calAFEStatus()
 //Returns true if calibration completes succsfully, otherwise returns false.
 bool NAU7802::waitForCalibrateAFE(uint32_t timeout_ms)
 {
-  uint32_t begin = millis();
+  unsigned long startTime = millis();
   NAU7802_Cal_Status cal_ready;
 
   while ((cal_ready = calAFEStatus()) == NAU7802_CAL_IN_PROGRESS)
   {
-    if ((timeout_ms > 0) && ((millis() - begin) > timeout_ms))
+    if ((timeout_ms > 0) && ((millis() - startTime) > timeout_ms))
     {
       break;
     }

@@ -282,7 +282,7 @@ int32_t NAU7802::getReading()
 //Gives up after 1000ms so don't call this function to average 8 samples setup at 1Hz output (requires 8s)
 int32_t NAU7802::getAverage(uint8_t averageAmount)
 {
-  long total = 0;
+  int32_t total = 0; // Readings are 24-bit. We're good to average 255 if needed
   uint8_t samplesAquired = 0;
 
   unsigned long startTime = millis();

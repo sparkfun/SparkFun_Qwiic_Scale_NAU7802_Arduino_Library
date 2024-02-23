@@ -130,7 +130,7 @@ NAU7802_Cal_Status NAU7802::calAFEStatus()
 //Wait for asynchronous AFE calibration to complete with optional timeout.
 //If timeout is not specified (or set to 0), then wait indefinitely.
 //Returns true if calibration completes succsfully, otherwise returns false.
-bool NAU7802::waitForCalibrateAFE(uint32_t timeout_ms)
+bool NAU7802::waitForCalibrateAFE(unsigned long timeout_ms)
 {
   unsigned long startTime = millis();
   NAU7802_Cal_Status cal_ready;

@@ -197,7 +197,7 @@ public:
 
   bool calibrateAFE(NAU7802_Cal_Mode mode = NAU7802_CALMOD_INTERNAL);      //Synchronous calibration of the analog front end of the NAU7802. Returns true if CAL_ERR bit is 0 (no error)
   void beginCalibrateAFE(NAU7802_Cal_Mode mode = NAU7802_CALMOD_INTERNAL); //Begin asynchronous calibration of the analog front end of the NAU7802. Poll for completion with calAFEStatus() or wait with waitForCalibrateAFE().
-  bool waitForCalibrateAFE(uint32_t timeout_ms = 0); //Wait for asynchronous AFE calibration to complete with optional timeout.
+  bool waitForCalibrateAFE(unsigned long timeout_ms = 0); //Wait for asynchronous AFE calibration to complete with optional timeout.
   NAU7802_Cal_Status calAFEStatus();                 //Check calibration status.
 
   bool reset(); //Resets all registers to Power Of Defaults

@@ -222,7 +222,7 @@ private:
   const uint8_t _deviceAddress = 0x2A; //Default unshifted 7-bit address of the NAU7802
 
   //y = mx+b
-  int32_t _zeroOffset;      //This is b
-  float _calibrationFactor; //This is m. User provides this number so that we can output y when requested
+  int32_t _zeroOffset = 0;        //This is b
+  float _calibrationFactor = 1.0; //This is m. User provides this number so that we can output y when requested
 };
 #endif

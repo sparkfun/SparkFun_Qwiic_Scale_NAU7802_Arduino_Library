@@ -62,6 +62,8 @@ bool NAU7802::begin(TwoWire &wirePort, bool initialize)
 
     result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
 
+    delay(_ldoRampDelay); //Wait for LDO to stabilize - takes about 200ms
+
     for (int i = 0; i < 10; i++)
       getWeight(); //Flush
 
@@ -222,6 +224,15 @@ bool NAU7802::setLDO(uint8_t ldoValue)
   setRegister(NAU7802_CTRL1, value);
 
   return (setBit(NAU7802_PU_CTRL_AVDDS, NAU7802_PU_CTRL)); //Enable the internal LDO
+}
+
+void NAU7802::setLDORampDelay(unsigned long delay)
+{
+  _ldoRampDelay = delay;
+}
+unsigned long NAU7802::getLDORampDelay()
+{
+  return _ldoRampDelay;
 }
 
 //Set the gain

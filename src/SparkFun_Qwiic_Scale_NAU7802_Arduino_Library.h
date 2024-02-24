@@ -192,7 +192,7 @@ public:
 
   bool setGain(uint8_t gainValue);        //Set the gain. x1, 2, 4, 8, 16, 32, 64, 128 are available
   bool setLDO(uint8_t ldoValue);          //Set the onboard Low-Drop-Out voltage regulator to a given value. 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.2, 4.5V are avaialable
-  void setLDORampDelay(unsigned long delay); //LDO (AVDD) takes ~200ms to ramp up. During .begin, delay for setLDORampDelay before performing calibrateAFE
+  void setLDORampDelay(unsigned long delay); //LDO (AVDD) takes ~200ms to ramp up. During .begin, delay for _ldoRampDelay before performing calibrateAFE
   unsigned long getLDORampDelay();
   bool setSampleRate(uint8_t rate);       //Set the readings per second. 10, 20, 40, 80, and 320 samples per second is available
   bool setChannel(uint8_t channelNumber); //Select between 1 and 2

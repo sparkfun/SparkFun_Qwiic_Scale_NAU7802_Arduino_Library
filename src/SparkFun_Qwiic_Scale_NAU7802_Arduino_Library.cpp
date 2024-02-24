@@ -58,7 +58,10 @@ bool NAU7802::begin(TwoWire &wirePort, bool initialize)
 
     result &= setSampleRate(NAU7802_SPS_80); //Set samples per second to 10
 
-    result &= setRegister(NAU7802_ADC, 0x30); //Turn off CLK_CHP. From 9.1 power on sequencing.
+    //Turn off CLK_CHP. From 9.1 power on sequencing.
+    uint8_t adc = getRegister(NAU7802_ADC);
+    adc |= 0x30;
+    result &= setRegister(NAU7802_ADC, adc);
 
     result &= setBit(NAU7802_PGA_PWR_PGA_CAP_EN, NAU7802_PGA_PWR); //Enable 330pF decoupling cap on chan 2. From 9.14 application circuit note.
 
@@ -268,21 +271,20 @@ int32_t NAU7802::getReading()
 
   if (_i2cPort->available())
   {
-    uint32_t valueRaw = (uint32_t)_i2cPort->read() << 16; //MSB
-    valueRaw |= (uint32_t)_i2cPort->read() << 8;          //MidSB
-    valueRaw |= (uint32_t)_i2cPort->read();               //LSB
+    union
+    {
+      uint32_t unsigned32;
+      int32_t signed32;
+    } signedUnsigned32; // Avoid ambiguity
 
-    // the raw value coming from the ADC is a 24-bit number, so the sign bit now
-    // resides on bit 23 (0 is LSB) of the uint32_t container. By shifting the
-    // value to the left, I move the sign bit to the MSB of the uint32_t container.
-    // By casting to a signed int32_t container I now have properly recovered
-    // the sign of the original value
-    int32_t valueShifted = (int32_t)(valueRaw << 8);
+    signedUnsigned32.unsigned32 = (uint32_t)_i2cPort->read() << 16; //MSB
+    signedUnsigned32.unsigned32 |= (uint32_t)_i2cPort->read() << 8; //MidSB
+    signedUnsigned32.unsigned32 |= (uint32_t)_i2cPort->read();      //LSB
 
-    // shift the number back right to recover its intended magnitude
-    int32_t value = (valueShifted >> 8);
+    if ((signedUnsigned32.unsigned32 & 0x00800000) == 0x00800000)
+      signedUnsigned32.unsigned32 |= 0xFF000000; // Preserve 2's complement
 
-    return (value);
+    return (signedUnsigned32.signed32);
   }
 
   return (0); //Error
@@ -334,7 +336,7 @@ int32_t NAU7802::getZeroOffset()
 void NAU7802::calculateCalibrationFactor(float weightOnScale, uint8_t averageAmount)
 {
   int32_t onScale = getAverage(averageAmount);
-  float newCalFactor = (onScale - _zeroOffset) / (float)weightOnScale;
+  float newCalFactor = ((float)(onScale - _zeroOffset)) / weightOnScale;
   setCalibrationFactor(newCalFactor);
 }
 
@@ -364,7 +366,7 @@ float NAU7802::getWeight(bool allowNegativeWeights, uint8_t samplesToTake)
       onScale = _zeroOffset; //Force reading to zero
   }
 
-  float weight = (onScale - _zeroOffset) / _calibrationFactor;
+  float weight = ((float)(onScale - _zeroOffset)) / _calibrationFactor;
   return (weight);
 }
 

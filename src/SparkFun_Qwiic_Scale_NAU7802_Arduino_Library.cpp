@@ -64,8 +64,7 @@ bool NAU7802::begin(TwoWire &wirePort, bool initialize)
 
     delay(_ldoRampDelay); //Wait for LDO to stabilize - takes about 200ms
 
-    for (int i = 0; i < 10; i++)
-      getWeight(); //Flush
+    getWeight(true, 10); //Flush
 
     result &= calibrateAFE(); //Re-cal analog front end when we change gain, sample rate, or channel
   }

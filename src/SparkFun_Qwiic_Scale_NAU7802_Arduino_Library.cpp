@@ -264,32 +264,7 @@ uint8_t NAU7802::getRevisionCode()
 //Assumes CR Cycle Ready bit (ADC conversion complete) has been checked to be 1
 int32_t NAU7802::getReading()
 {
-  _i2cPort->beginTransmission(_deviceAddress);
-  _i2cPort->write(NAU7802_ADCO_B2);
-  if (_i2cPort->endTransmission() != 0)
-    return (false); //Sensor did not ACK
-
-  _i2cPort->requestFrom((uint8_t)_deviceAddress, (uint8_t)3);
-
-  if (_i2cPort->available())
-  {
-    union
-    {
-      uint32_t unsigned32;
-      int32_t signed32;
-    } signedUnsigned32; // Avoid ambiguity
-
-    signedUnsigned32.unsigned32 = (uint32_t)_i2cPort->read() << 16; //MSB
-    signedUnsigned32.unsigned32 |= (uint32_t)_i2cPort->read() << 8; //MidSB
-    signedUnsigned32.unsigned32 |= (uint32_t)_i2cPort->read();      //LSB
-
-    if ((signedUnsigned32.unsigned32 & 0x00800000) == 0x00800000)
-      signedUnsigned32.unsigned32 |= 0xFF000000; // Preserve 2's complement
-
-    return (signedUnsigned32.signed32);
-  }
-
-  return (0); //Error
+  return get24BitRegister(NAU7802_ADCO_B2);
 }
 
 //Return the average of a given number of readings
@@ -431,6 +406,102 @@ bool NAU7802::setRegister(uint8_t registerAddress, uint8_t value)
   _i2cPort->beginTransmission(_deviceAddress);
   _i2cPort->write(registerAddress);
   _i2cPort->write(value);
+  if (_i2cPort->endTransmission() != 0)
+    return (false); //Sensor did not ACK
+  return (true);
+}
+
+//Get contents of a 24-bit signed register (conversion result and offsets)
+int32_t NAU7802::get24BitRegister(uint8_t registerAddress)
+{
+  _i2cPort->beginTransmission(_deviceAddress);
+  _i2cPort->write(registerAddress);
+  if (_i2cPort->endTransmission() != 0)
+    return (false); //Sensor did not ACK
+
+  _i2cPort->requestFrom((uint8_t)_deviceAddress, (uint8_t)3);
+
+  if (_i2cPort->available())
+  {
+    union
+    {
+      uint32_t unsigned32;
+      int32_t signed32;
+    } signedUnsigned32; // Avoid ambiguity
+
+    signedUnsigned32.unsigned32 = (uint32_t)_i2cPort->read() << 16; //MSB
+    signedUnsigned32.unsigned32 |= (uint32_t)_i2cPort->read() << 8; //MidSB
+    signedUnsigned32.unsigned32 |= (uint32_t)_i2cPort->read();      //LSB
+
+    if ((signedUnsigned32.unsigned32 & 0x00800000) == 0x00800000)
+      signedUnsigned32.unsigned32 |= 0xFF000000; // Preserve 2's complement
+
+    return (signedUnsigned32.signed32);
+  }
+
+  return (0); //Error
+}
+
+//Send 24 LSBs of value to given register address. Return true if successful
+//Note: assumes bit 23 is already correct for 24-bit signed
+bool NAU7802::set24BitRegister(uint8_t registerAddress, int32_t value)
+{
+  union
+  {
+    uint32_t unsigned32;
+    int32_t signed32;
+  } signedUnsigned32; // Avoid ambiguity
+
+  signedUnsigned32.signed32 = value;
+
+  _i2cPort->beginTransmission(_deviceAddress);
+  _i2cPort->write(registerAddress);
+
+  _i2cPort->write((uint8_t)((signedUnsigned32.unsigned32 >> 16) & 0xFF));
+  _i2cPort->write((uint8_t)((signedUnsigned32.unsigned32 >> 8) & 0xFF));
+  _i2cPort->write((uint8_t)(signedUnsigned32.unsigned32 & 0xFF));
+
+  if (_i2cPort->endTransmission() != 0)
+    return (false); //Sensor did not ACK
+  return (true);
+}
+
+//Get contents of a 32-bit register (gains)
+uint32_t NAU7802::get32BitRegister(uint8_t registerAddress)
+{
+  _i2cPort->beginTransmission(_deviceAddress);
+  _i2cPort->write(registerAddress);
+  if (_i2cPort->endTransmission() != 0)
+    return (false); //Sensor did not ACK
+
+  _i2cPort->requestFrom((uint8_t)_deviceAddress, (uint8_t)4);
+
+  if (_i2cPort->available())
+  {
+    uint32_t unsigned32;
+
+    unsigned32 = (uint32_t)_i2cPort->read() << 24; //MSB
+    unsigned32 |= (uint32_t)_i2cPort->read() << 16;
+    unsigned32 |= (uint32_t)_i2cPort->read() << 8;
+    unsigned32 |= (uint32_t)_i2cPort->read();      //LSB
+
+    return (unsigned32);
+  }
+
+  return (0); //Error
+}
+
+//Send 32-bit value to given register address. Return true if successful
+bool NAU7802::set32BitRegister(uint8_t registerAddress, uint32_t value)
+{
+  _i2cPort->beginTransmission(_deviceAddress);
+  _i2cPort->write(registerAddress);
+
+  _i2cPort->write((uint8_t)((value >> 24) & 0xFF));
+  _i2cPort->write((uint8_t)((value >> 16) & 0xFF));
+  _i2cPort->write((uint8_t)((value >> 8) & 0xFF));
+  _i2cPort->write((uint8_t)(value & 0xFF));
+
   if (_i2cPort->endTransmission() != 0)
     return (false); //Sensor did not ACK
   return (true);

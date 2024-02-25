@@ -219,6 +219,11 @@ public:
   uint8_t getRegister(uint8_t registerAddress);             //Get contents of a register
   bool setRegister(uint8_t registerAddress, uint8_t value); //Send a given value to be written to given address. Return true if successful
 
+  int32_t get24BitRegister(uint8_t registerAddress);        //Get contents of a 24-bit signed register (conversion result and offsets)
+  bool set24BitRegister(uint8_t registerAddress, int32_t value); //Send 24 LSBs of value to given register address. Return true if successful
+  uint32_t get32BitRegister(uint8_t registerAddress);       //Get contents of a 32-bit register (gains)
+  bool set32BitRegister(uint8_t registerAddress, uint32_t value); //Send a given value to be written to given address. Return true if successful
+
 private:
   TwoWire *_i2cPort;                   //This stores the user's requested i2c port
   const uint8_t _deviceAddress = 0x2A; //Default unshifted 7-bit address of the NAU7802

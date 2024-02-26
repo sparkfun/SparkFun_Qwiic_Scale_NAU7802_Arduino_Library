@@ -269,7 +269,7 @@ int32_t NAU7802::getReading()
 
 //Return the average of a given number of readings
 //Gives up after 1000ms so don't call this function to average 8 samples setup at 1Hz output (requires 8s)
-int32_t NAU7802::getAverage(uint8_t averageAmount)
+int32_t NAU7802::getAverage(uint8_t averageAmount, unsigned long timeout_ms)
 {
   int32_t total = 0; // Readings are 24-bit. We're good to average 255 if needed
   uint8_t samplesAquired = 0;
@@ -283,7 +283,7 @@ int32_t NAU7802::getAverage(uint8_t averageAmount)
       if (++samplesAquired == averageAmount)
         break; //All done
     }
-    if (millis() - startTime > 1000)
+    if (millis() - startTime > timeout_ms)
       return (0); //Timeout - Bail with error
     delay(1);
   }
@@ -293,9 +293,9 @@ int32_t NAU7802::getAverage(uint8_t averageAmount)
 }
 
 //Call when scale is setup, level, at running temperature, with nothing on it
-void NAU7802::calculateZeroOffset(uint8_t averageAmount)
+void NAU7802::calculateZeroOffset(uint8_t averageAmount, unsigned long timeout_ms)
 {
-  setZeroOffset(getAverage(averageAmount));
+  setZeroOffset(getAverage(averageAmount, timeout_ms));
 }
 
 //Sets the internal variable. Useful for users who are loading values from NVM.
@@ -310,9 +310,9 @@ int32_t NAU7802::getZeroOffset()
 }
 
 //Call after zeroing. Provide the float weight sitting on scale. Units do not matter.
-void NAU7802::calculateCalibrationFactor(float weightOnScale, uint8_t averageAmount)
+void NAU7802::calculateCalibrationFactor(float weightOnScale, uint8_t averageAmount, unsigned long timeout_ms)
 {
-  int32_t onScale = getAverage(averageAmount);
+  int32_t onScale = getAverage(averageAmount, timeout_ms);
   float newCalFactor = ((float)(onScale - _zeroOffset)) / weightOnScale;
   setCalibrationFactor(newCalFactor);
 }
@@ -330,9 +330,9 @@ float NAU7802::getCalibrationFactor()
 }
 
 //Returns the y of y = mx + b using the current weight on scale, the cal factor, and the offset.
-float NAU7802::getWeight(bool allowNegativeWeights, uint8_t samplesToTake)
+float NAU7802::getWeight(bool allowNegativeWeights, uint8_t samplesToTake, unsigned long timeout_ms)
 {
-  int32_t onScale = getAverage(samplesToTake);
+  int32_t onScale = getAverage(samplesToTake, timeout_ms);
 
   //Prevent the current reading from being less than zero offset
   //This happens when the scale is zero'd, unloaded, and the load cell reports a value slightly less than zero value
@@ -506,3 +506,9 @@ bool NAU7802::set32BitRegister(uint8_t registerAddress, uint32_t value)
     return (false); //Sensor did not ACK
   return (true);
 }
+
+//Helper methods
+int32_t NAU7802::getChannel1Offset() { return get24BitRegister(NAU7802_OCAL1_B2); }
+bool NAU7802::setChannel1Offset(int32_t value) { return set24BitRegister(NAU7802_OCAL1_B2, value); }
+uint32_t NAU7802::getChannel1Gain() { return get32BitRegister(NAU7802_GCAL1_B3); }
+bool NAU7802::setChannel1Gain(uint32_t value) { return set32BitRegister(NAU7802_GCAL1_B3, value); }
